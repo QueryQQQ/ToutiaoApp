@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+
+# 工具缓存
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# 前端
+xwzx-news/node_modules/
+xwzx-news/dist/
+
+# 环境变量与密钥
+.env
+.env.local
+
+# 编辑器与系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 本地备份
+_backup_*/

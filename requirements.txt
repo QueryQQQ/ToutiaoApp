@@ -1,0 +1,92 @@
+# ToutiaoApp 依赖锁文件（完整锁定，含传递依赖）
+#
+# 生成：在项目根目录执行
+#   ./.venv/Scripts/python.exe -m pip freeze > requirements.txt
+# 还原：换机器 / 重建 venv 后执行
+#   python -m venv .venv
+#   ./.venv/Scripts/python.exe -m pip install -r requirements.txt
+#
+# 说明：
+#   下面 70 行里大部分是传递依赖，不用手动维护。
+#   真正"手装"的直接依赖只有这 8 个（改了它们再重新 freeze）：
+#     fastapi  uvicorn[standard]  sqlalchemy  aiomysql  pymysql
+#     pwdlib[argon2]  bcrypt  cryptography
+#
+# 两条不能随便动的：
+#   bcrypt==5.0.0      不负责算新哈希，但 pwdlib 的 BcryptHasher 靠它校验库里
+#                      历史 $2b$ 哈希（admin 那条）。删了老账号就登不进（见 docs/errors.md 006）
+#   pwdlib==0.3.1      替代已停维护的 passlib，新密码走 Argon2id
+#
+# 注意：本文件由 Windows + Python 3.14 venv 导出，换系统（Linux/macOS）时
+#       colorama 这类平台包可忽略，其余版本号照装即可。
+
+agent-detector==2.0.0
+aiomysql==0.3.2
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.15.1
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0
+bcrypt==5.0.0
+certifi==2026.10.23
+cffi==2.1.1
+charset-normalizer==3.5.2
+click==8.5.0
+colorama==0.4.6
+cryptography==50.0.2
+detect-installer==0.2.1
+dnspython==2.9.1
+email-validator==2.3.0
+fastapi==0.162.0
+fastapi-cli==0.0.32
+fastapi-cloud-cli==0.26.0
+fastar==0.12.0
+googleapis-common-protos==1.76.0
+greenlet==3.5.6
+h11==0.16.0
+httpcore==1.0.9
+httpcore2==2.16.0
+httptools==0.9.0
+httpx==0.28.1
+httpx2==2.16.0
+idna==3.20
+Jinja2==3.1.6
+markdown-it-py==4.2.0
+MarkupSafe==3.0.4
+mdurl==0.1.2
+opentelemetry-api==1.45.2
+opentelemetry-exporter-http-transport==0.66b2
+opentelemetry-exporter-otlp-common==0.66b2
+opentelemetry-exporter-otlp-proto-common==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+opentelemetry-proto==1.45.2
+opentelemetry-sdk==1.45.2
+opentelemetry-semantic-conventions==0.66b2
+protobuf==7.36.2
+pwdlib==0.3.1
+pycparser==3.12
+pydantic==2.14.2
+pydantic-extra-types==2.11.1
+pydantic-settings==2.16.2
+pydantic_core==2.50.2
+Pygments==2.21.0
+PyMySQL==1.2.3
+python-dotenv==1.2.4
+python-multipart==0.0.32
+PyYAML==6.0.3
+requests==2.34.2
+rich==15.0.0
+rich-toolkit==0.20.6
+rignore==0.8.1
+sentry-sdk==2.73.0
+shellingham==1.5.4
+SQLAlchemy==2.1.6
+starlette==1.10.0
+truststore==0.10.5
+typer==0.27.3
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+urllib3==2.8.0
+uvicorn==0.54.0
+watchfiles==1.3.0
+websockets==17.4
