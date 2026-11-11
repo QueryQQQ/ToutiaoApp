@@ -4,9 +4,9 @@ from starlette import status
 
 from config.db_conf import get_db
 from crud import favorite
-from crud.favorite import is_news_favorite, add_news_favorite
+from crud.favorite import is_news_favorite
 from models.users import User
-from schemas.favorite import FavoriteAddRequest, FavoriteCheckResponse
+from schemas.favorite import FavoriteAddRequest, FavoriteCheckResponse, FavoriteListResponse, FavoriteNewsItemResponse
 from utils.auth import get_current_user
 from utils.response import success_response
 
@@ -57,9 +57,29 @@ async def remove_favorite(
 # 需要分页查询,page,page_size,db,user
 @router.get("/list")
 async def get_favorite_list(
-    page: int,
+    page: int = Query(default=1,ge=1),
     page_size: int = Query(default=10, alias="pageSize", le = 100),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    return success_response(message="成功获取收藏列表")
+    rows, total = await favorite.get_favorite_list(db, user.id, page, page_size)
+    # rows 是 list[Row]，每行 3 项：(News 实体, favorite_time, favorite_id),list[row]就是每个元素
+    # Row 不能直接进响应：① 前端要驼峰别名 ② __dict__ 里有 _sa_instance_state
+    # 所以逐条构造成 FavoriteNewsItemResponse
+    favorite_list = [
+        FavoriteNewsItemResponse.model_validate({
+        **news.__dict__,# **解包, __dict__转字典
+        "favorite_time": favorite_time,
+        "favorite_id": favorite_id  
+    }) for news, favorite_time, favorite_id in rows]
+    has_more = total > page * page_size # has_more存bool值
+    # 不能直接返回data,原因没有类型,不符合通用返回格式
+    # 创建模型类来返回
+    # model_validate 只接受一个位置参数 obj（要校验的原始数据），其余都是关键字参数
+    # 所以这里必须传一个"字典"，不能把 list / total / hasMore 直接当关键字传进去
+    data = FavoriteListResponse.model_validate({
+        "list": favorite_list,
+        "total": total,
+        "hasMore": has_more,
+    })
+    return success_response(message="成功获取收藏列表", data=data)
