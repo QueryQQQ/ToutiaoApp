@@ -11,6 +11,7 @@ class Base(DeclarativeBase):
     pass
 
 
+# 定义模型类
 class Favorite(Base):
     """
     收藏表ORM模型

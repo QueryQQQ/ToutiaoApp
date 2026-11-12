@@ -25,8 +25,11 @@ class Base(DeclarativeBase):
 
 
 # 模型化类
-# 新闻分类类
+# 新闻分类表
 class Category(Base):
+    """
+    新闻分类表ORM模型
+    """
     __tablename__ = "news_category"     # 数据表名
 
     # 定义了数据库类型、主键、自增、描述
@@ -46,8 +49,11 @@ class Category(Base):
         return f"<Category(id={self.id}, name={self.name}, sort_order={self.sort_order})>"
 
 
-# 新闻详情类
+# 新闻详情表
 class News(Base):
+    """
+    新闻详情表ORM模型
+    """
     __tablename__ = "news"
 
     # 创建索引: 提升查询速度 → 添加目录

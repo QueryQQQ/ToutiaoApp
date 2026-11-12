@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from schemas.base import NewsItemBase
 
-
+# 定义请求体参数(继承BaseModel)
 class FavoriteCheckResponse(BaseModel):
     is_favorite: bool = Field(..., alias = "isFavorite")
 

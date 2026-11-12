@@ -28,6 +28,7 @@ async def check_favorite(
 
 
 # 收藏新闻
+# 一旦出现post，参数就必须是请求体参数，就要定义模型类
 @router.post("/add")
 async def add_favorite(
     data: FavoriteAddRequest,
@@ -83,3 +84,14 @@ async def get_favorite_list(
         "hasMore": has_more,
     })
     return success_response(message="成功获取收藏列表", data=data)
+
+
+# 清空收藏列表
+@router.delete("/clear")
+async def clear_favorite_list(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    count= await favorite.remove_all_favorites(db, user.id)
+    return success_response(message=f"清空了{count}条新闻")
+            
