@@ -5,7 +5,7 @@ from fastapi import FastAPI
 # 同源指的是协议、域名、端口都要相同
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import favorite, news, users
+from routers import favorite, history, news, users
 from utils.exception_handlers import register_excetion_handlers  # 引入路由模块
 
 # 颜色对应的语言元素
@@ -42,3 +42,4 @@ def root():
 app.include_router(news.router)
 app.include_router(users.router)
 app.include_router(favorite.router)
+app.include_router(history.router)
