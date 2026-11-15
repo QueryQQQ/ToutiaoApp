@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db_conf import get_db
 from crud import news
+from crud import news_cache
+from schemas.base import NewsItemBase
 from schemas.news import CategoryListResponse
 
 # 模块化路由，使得每个模块对应自己接口，易维护
@@ -35,7 +37,7 @@ async def get_categories(
     :param skip: 跳过数量
     :param limit: 限制数量
     """
-    categories = await news.get_categories(db, skip, limit)
+    categories = await news_cache.get_categories(db, skip, limit)
     return {
         "code": 200,
         "message": "获取新闻分类成功",
@@ -56,15 +58,21 @@ async def get_news_list(
     # 查询功能
     # 进入请求 -> 处理分页规则 -> 按分类id查询新闻 -> 计算并获取总量 -> 计算是否还有更多新闻
     offset = (page - 1) * page_size # 跳过数量=(页码-1)*每页数量
-    news_list = await news.get_news_list(db, category_id, offset, page_size)# 调用方法,三个参数
+    news_list = await news_cache.get_news_list(db, category_id, offset, page_size)# 调用方法,三个参数
     total = await news.get_news_count(db, category_id)
+
+    # 不管 news_list 来自缓存(dict)还是数据库(ORM)，都走同一个 schema 序列化
+    # model_dump(by_alias=True) 才会输出前端要的 categoryId / publishTime
+    # 这一步是"响应结构"的唯一出口，缓存命中与否对前端完全透明
+    items = [NewsItemBase.model_validate(item).model_dump(by_alias=True) for item in news_list]
+
     # 获取总量后查询是否有      # (offset + 当前新闻列表条数) < 总量
-    has_more = (offset + len(news_list)) < total
+    has_more = (offset + len(items)) < total
     return {
           "code": 200,
             "message": "获取新闻分类成功",
             "data": {
-                "list": news_list,
+                "list": items,
                 "total": total,
                 "hasMore": has_more,
             }
