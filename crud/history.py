@@ -33,7 +33,7 @@ async def add_historys(
     # 那是两次独立请求，双击/多标签页照样各插一行
     query = select(History).where(History.user_id == user_id, History.news_id == news_id)
     result = await db.execute(query)
-    record = result.scalars().first()
+    record = result.scalars().first() # db.execute()获得表,scalars()获得列(行数不为1),first()从这一列取第一格,获得单个orm对象
 
     # 相较Favorite前端代码允许多次浏览,所以会出现重复新闻的情况,需要判断
     if record is not None:
@@ -88,15 +88,17 @@ async def get_history_list(
         # ]
 
 
-# 移除新闻收藏
-async def remove_news_history(
+# 删除单条浏览历史
+async def remove_history_by_id(
         db: AsyncSession,
         user_id: int,
-        news_id: int,
+        history_id: int,
 ):
+    # 按 history.id 删除（URL 里传来的是 historyId，不是 newsId）
+    # 同时带上 user_id 条件做归属校验：否则拿到别人的 history_id 就能删别人的记录
     stmt = delete(History).where(
+        History.id == history_id,
         History.user_id == user_id,
-        History.news_id == news_id,
     )
     result = await db.execute(stmt)
     await db.commit()

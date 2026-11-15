@@ -19,7 +19,7 @@ from utils.response import success_response
 router = APIRouter(prefix="/api/history", tags=["history"])
 
 
-# 检查历史收藏状态
+# 检查历史浏览状态
 # 定义newsid, 数据库, 当前用户
 @router.get("/check")
 async def check_history(
@@ -74,15 +74,19 @@ async def get_history_list(
     return success_response(message="成功获取浏览历史", data=data)
 
 
+# 清除单条浏览历史
+# 路径参数就是 historyId（前端 DELETE /api/history/delete/{historyId}）
+# 之前这里写的是 news_id: int = Query(..., alias="newsId")，
+# 前端从来不发这个 query，所以请求必然 422
 @router.delete("/delete/{history_id}")
 async def delete_history(
-    news_id: int = Query(..., alias = "newsId"),
+    history_id: int,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await history.remove_news_history(db, user.id, news_id)
+    result = await history.remove_history_by_id(db, user.id, history_id)
     if not result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="收藏记录不存在")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="浏览记录不存在")
     return success_response(message="历史删除成功") # 删除成功data直接返回None即可
 
 

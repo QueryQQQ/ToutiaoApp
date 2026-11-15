@@ -136,7 +136,9 @@ export const useHistoryStore = defineStore('history', {
         if (response.data.code === 200) {
           console.log('删除浏览历史API：删除成功');
           // 更新本地历史记录
-          this.removeHistory(id);
+          // 注意：这里必须用参数 historyId，之前写成 id 会抛 ReferenceError，
+          // 被下面的 catch 吃掉后返回"网络请求失败"，前端就会以为后端删失败了
+          this.removeHistory(historyId);
           return { success: true };
         } else {
           console.error('删除浏览历史API：请求失败', response.data.message);
