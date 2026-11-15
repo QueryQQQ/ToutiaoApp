@@ -112,8 +112,11 @@ const sendMessage = async () => {
 
 // 获取AI响应
 const fetchAIResponse = async (userMessage) => {
+  // slice(0, -1) 去掉末尾那条空的 assistant 占位，此时已包含本条用户消息
+  // filter 过滤掉空内容（例如上一条回复失败留下的空串），否则 API 会报 400
   const historyMessages = messages.value
       .slice(0, -1)
+      .filter(msg => msg.content && msg.content.trim())
       .map(msg => ({ role: msg.role, content: msg.content }));
 
   try {
@@ -121,17 +124,23 @@ const fetchAIResponse = async (userMessage) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // 关键：缺少这个头就是 401 Unauthorized
+        Authorization: `Bearer ${aiChatConfig.apiKey.trim()}`,
       },
       body: JSON.stringify({
-        message: userMessage,
-        history: historyMessages,
-        stream: isStreaming.value // 动态读取上方开关的状态
+        model: aiChatConfig.model,          // 必填，缺了会 400
+        messages: historyMessages,          // OpenAI 格式：messages 数组
+        stream: isStreaming.value,          // 动态读取上方开关的状态
+        thinking: { type: aiChatConfig.thinking },
       })
     });
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+      // DeepSeek 的错误结构是 { error: { message, type } }，不是 { message }
+      throw new Error(
+        error.error?.message || error.message || `HTTP error! status: ${response.status}`
+      );
     }
 
     const contentType = response.headers.get('content-type');
@@ -143,8 +152,11 @@ const fetchAIResponse = async (userMessage) => {
       // 否则走非流式一次性返回处理
       const data = await response.json();
 
-      if (data.code === 200 && data.data?.reply) {
-        messages.value[messages.value.length - 1].content = data.data.reply;
+      // 兼容两种返回结构：自家后端 {code, data:{reply}} / DeepSeek {choices:[{message}]}
+      const reply = data.data?.reply || data.choices?.[0]?.message?.content;
+
+      if (reply) {
+        messages.value[messages.value.length - 1].content = reply;
       } else {
         messages.value[messages.value.length - 1].content = data.message || 'AI 回复失败';
       }
