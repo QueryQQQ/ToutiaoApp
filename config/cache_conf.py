@@ -45,7 +45,7 @@ async def get_json_cache(key: str):
 # 设置缓存setex(key, expire, value)
 async def set_cache(key: str, value: Any, expire: int = 3600):
     try:
-        # 如果是字典和字符串,要转字符串再存到缓存里面
+        # 如果是字典和列表,要转字符串再存到缓存里面
         if isinstance(value, (dict, list)):
             # json.dump将python对象转为json字符串
             value = json.dumps(value, ensure_ascii=False) # 中文保持正常,不转译
